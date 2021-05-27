@@ -24,6 +24,17 @@ void blockHash(Block *block, char *hash)
     }
 }
 
+void processHash(Block *block, int difficulty)
+{
+    block->nonce = 0;
+    do {
+        ++block->nonce;
+        char hash[HASH_DIGEST_SIZE + 1] = "";
+        blockHash(block, hash);
+        strcpy(block->hash, hash);
+    } while (!blockValidate(block, difficulty));
+}
+
 void toString(void *data, size_t size, char* dest)
 {
     assert(data != NULL && size > 0);
@@ -34,8 +45,11 @@ void blockToString(Block *block, char* str)
 {
     const char* separator = ":";
 
-    char timestamp[11];
-    sprintf(timestamp, "%010d", block->timestamp);
+    char timestamp[32];
+    sprintf(timestamp, "%lu", block->timestamp);
+
+    char nonce[INT32_MAX % 10];
+    sprintf(nonce, "%d", block->nonce);
 
     char data[block->size];
     if (block->data != NULL && block->size > 0) {
@@ -47,25 +61,36 @@ void blockToString(Block *block, char* str)
     strcat(str, block->previousHash != NULL ? block->previousHash : "NULL");
     strcat(str, separator);
     strcat(str, block->data != NULL && block->size > 0 ? data : "NULL");
+    strcat(str, separator);
+    strcat(str, nonce);
 }
 
-void blockchainInit(Blockchain *blockchain)
+int blockValidate(Block *block, int difficulty)
+{
+    assert(difficulty < HASH_DIGEST_SIZE);
+    for (int i = 0 ; i < difficulty ; ++i)
+        if (block->hash[i] != '0')
+            return 0;
+    return 1;
+}
+
+void blockchainInit(Blockchain *blockchain, int difficulty)
 {
     // Initialize blockchain
     blockchain->n = 1;
     blockchain->blocks = (Block *) malloc(sizeof(Block) * 2);
+    blockchain->difficulty = difficulty;
 
     // Create genesis block
     Block genesis = {
-            .timestamp = 0,
+            .timestamp = time(NULL),
             .data = NULL,
             .size = 0,
             .previousHash = NULL,
-            .hash = ""
+            .hash = "",
+            .nonce = 0
     };
-    char hash[HASH_DIGEST_SIZE + 1] = "";
-    blockHash(&genesis, hash);
-    strcpy(genesis.hash, hash);
+    processHash(&genesis, blockchain->difficulty);
 
     // Add the genesis block to the blockchain
     blockchain->blocks[0] = genesis;
@@ -76,7 +101,7 @@ void blockchainAddBlock(Blockchain *blockchain, Block *block)
     block->previousHash = blockchain->blocks[blockchain->n - 1].hash;
     char hash[HASH_DIGEST_SIZE + 1] = "";
     blockHash(block, hash);
-    strcpy(block->hash, hash);
+    processHash(block, blockchain->difficulty);
     blockchain->blocks = (Block *) realloc(blockchain->blocks, ++blockchain->n * sizeof(Block));
     blockchain->blocks[blockchain->n - 1] = *block;
 }
@@ -89,6 +114,32 @@ void blockchainDisplay(Blockchain *blockchain)
         blockToString(block, str);
         printf("%04d\t%s\t%s\n", i, block->hash, str);
     }
+}
+
+int blockchainValidate(Blockchain *blockchain)
+{
+    for (int i = 0 ; i < blockchain->n ; ++i) {
+        Block *block = &blockchain->blocks[i];
+
+        // All block hashes must be valid
+        if (!blockValidate(block, blockchain->difficulty)) {
+            return 0;
+        }
+
+        // Each block hash correspond the block calculated hash
+        char hash[HASH_DIGEST_SIZE + 1] = "";
+        blockHash(block, hash);
+        if (strcmp(block->hash, hash) != 0) {
+            return 0;
+        }
+
+        // All blocks, except the genesis block must point to the previous block
+        if (i > 0 && strcmp(block->previousHash, blockchain->blocks[i-1].hash) != 0) {
+            return 0;
+        }
+
+    }
+    return 1;
 }
 
 void blockchainDestroy(Blockchain *blockchain)

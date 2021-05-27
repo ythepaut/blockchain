@@ -7,39 +7,43 @@
  */
 
 #include <stdio.h>
+#include <time.h>
 #include "blockchain.h"
 
 void test() {
 
     Blockchain blockchain;
+    blockchainInit(&blockchain, 4);
 
-    blockchainInit(&blockchain);
-
-    char data[] = "bonjour";
+    // Add a first block
+    char data1[] = "bonjour";
     Block block = {
-            .timestamp = 0,
-            .data = (void *) &data,
-            .size = sizeof(char) * (strlen(data) + 1),
+            .timestamp = time(NULL),
+            .data = (void *) &data1,
+            .size = sizeof(char) * (strlen(data1) + 1),
             .previousHash = NULL,
-            .hash = ""
+            .hash = "",
+            .nonce = 0
     };
+    blockchainAddBlock(&blockchain, &block);
 
-    char str[MAX_BLOCK_DESCRIPTION_SIZE + block.size];
-    blockToString(&block, str);
-    char hash[65] = "";
-    blockHash(&block, hash);
-    printf("Block desc : %s\n", str);
-    printf("Block hash : %s\n", hash);
-
-    blockchainDisplay(&blockchain);
-
+    // Add a second block
+    char data2[] = "bonsoir";
+    block.data = (void *) &data2;
+    block.size = sizeof(char) * (strlen(data2) + 1),
+    block.timestamp = time(NULL);
     blockchainAddBlock(&blockchain, &block);
 
     blockchainDisplay(&blockchain);
 
-    blockchainAddBlock(&blockchain, &block);
+    assert(blockchainValidate(&blockchain));
 
+    printf("Tampering with the blockchain :\n");
+
+    blockchain.blocks[1].data = "salut";        // Modify block data
+    //blockchain.blocks[2].previousHash = "af4d85fd8d23b3c07366ae29c0e3a85b7d5c82f6edb4a6c11e20d88b9f7e19b6";     // Modify block link
     blockchainDisplay(&blockchain);
+    assert(blockchainValidate(&blockchain) == 0);
 
     blockchainDestroy(&blockchain);
 }
