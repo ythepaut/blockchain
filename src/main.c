@@ -21,7 +21,7 @@ void test() {
             .data = (void *) &data,
             .size = sizeof(char) * (strlen(data) + 1),
             .previousHash = NULL,
-            .hash = NULL
+            .hash = ""
     };
 
     char str[MAX_BLOCK_DESCRIPTION_SIZE + block.size];

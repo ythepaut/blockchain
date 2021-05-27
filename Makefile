@@ -12,11 +12,11 @@ CC = gcc $(CFLAGS)
 
 all: main
 
-main: main.o blockchain.o
+main: src/main.o src/blockchain.o
 	$(CC) -o $@ $^
 
-%.o: %.c %.h
+%.o: src/%.c src/%.h
 	$(CC) -c $< -o $@
 
 clean:
-	rm -f main *.o a.out
+	rm -f src/main src/*.o src/a.out
