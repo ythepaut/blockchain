@@ -71,6 +71,9 @@ void linkedListDisplay(LinkedList *linkedList) {
 }
 
 void linkedListDestroy(LinkedList *linkedList) {
+    if (linkedList == NULL)
+        return;
+
     Element *previous;
     Element *current = linkedList->head;
     while (current != NULL) {
