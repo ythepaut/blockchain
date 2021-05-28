@@ -8,24 +8,22 @@
 
 #include "blockchain.h"
 
-void blockHash(Block *block, char *hash)
-{
+void blockHash(Block *block, char *hash) {
     char blockStr[MAX_BLOCK_DESCRIPTION_SIZE + block->size + 1];
     blockToString(block, blockStr);
 
-    unsigned char *d = SHA256((const unsigned char*) blockStr, strlen(blockStr), 0);
+    unsigned char *d = SHA256((const unsigned char *) blockStr, strlen(blockStr), 0);
 
     char currentByte[3];
     sprintf(currentByte, "%02x", d[0]);
     strcpy(hash, currentByte);
-    for (int i = 1 ; i < SHA256_DIGEST_LENGTH ; ++i) {
+    for (int i = 1; i < SHA256_DIGEST_LENGTH; ++i) {
         sprintf(currentByte, "%02x", d[i]);
         strcat(hash, currentByte);
     }
 }
 
-void processHash(Block *block, int difficulty)
-{
+void processHash(Block *block, int difficulty) {
     block->nonce = 0;
     do {
         ++block->nonce;
@@ -35,15 +33,13 @@ void processHash(Block *block, int difficulty)
     } while (!blockValidate(block, difficulty));
 }
 
-void toString(void *data, size_t size, char* dest)
-{
+void toString(void *data, size_t size, char *dest) {
     assert(data != NULL && size > 0);
     memcpy(dest, data, size);
 }
 
-void blockToString(Block *block, char* str)
-{
-    const char* separator = ":";
+void blockToString(Block *block, char *str) {
+    const char *separator = ":";
 
     char timestamp[32];
     sprintf(timestamp, "%lu", block->timestamp);
@@ -65,17 +61,15 @@ void blockToString(Block *block, char* str)
     strcat(str, nonce);
 }
 
-int blockValidate(Block *block, int difficulty)
-{
+int blockValidate(Block *block, int difficulty) {
     assert(difficulty < HASH_DIGEST_SIZE);
-    for (int i = 0 ; i < difficulty ; ++i)
+    for (int i = 0; i < difficulty; ++i)
         if (block->hash[i] != '0')
             return 0;
     return 1;
 }
 
-void blockchainInit(Blockchain *blockchain, int difficulty)
-{
+void blockchainInit(Blockchain *blockchain, int difficulty) {
     // Initialize blockchain
     blockchain->n = 1;
     blockchain->blocks = (Block *) malloc(sizeof(Block) * 2);
@@ -96,8 +90,7 @@ void blockchainInit(Blockchain *blockchain, int difficulty)
     blockchain->blocks[0] = genesis;
 }
 
-void blockchainAddBlock(Blockchain *blockchain, Block *block)
-{
+void blockchainAddBlock(Blockchain *blockchain, Block *block) {
     strcpy(block->previousHash, blockchain->blocks[blockchain->n - 1].hash);
     char hash[HASH_DIGEST_SIZE + 1] = "";
     blockHash(block, hash);
@@ -106,9 +99,8 @@ void blockchainAddBlock(Blockchain *blockchain, Block *block)
     blockchain->blocks[blockchain->n - 1] = *block;
 }
 
-void blockchainDisplay(Blockchain *blockchain)
-{
-    for (int i = 0 ; i < blockchain->n ; ++i) {
+void blockchainDisplay(Blockchain *blockchain) {
+    for (int i = 0; i < blockchain->n; ++i) {
         Block *block = &blockchain->blocks[i];
         char str[MAX_BLOCK_DESCRIPTION_SIZE + block->size];
         blockToString(block, str);
@@ -116,9 +108,8 @@ void blockchainDisplay(Blockchain *blockchain)
     }
 }
 
-int blockchainValidate(Blockchain *blockchain)
-{
-    for (int i = 0 ; i < blockchain->n ; ++i) {
+int blockchainValidate(Blockchain *blockchain) {
+    for (int i = 0; i < blockchain->n; ++i) {
         Block *block = &blockchain->blocks[i];
 
         // All block hashes must be valid
@@ -134,7 +125,7 @@ int blockchainValidate(Blockchain *blockchain)
         }
 
         // All blocks, except the genesis block must point to the previous block
-        if (i > 0 && strcmp(block->previousHash, blockchain->blocks[i-1].hash) != 0) {
+        if (i > 0 && strcmp(block->previousHash, blockchain->blocks[i - 1].hash) != 0) {
             return 0;
         }
 
@@ -142,7 +133,6 @@ int blockchainValidate(Blockchain *blockchain)
     return 1;
 }
 
-void blockchainDestroy(Blockchain *blockchain)
-{
+void blockchainDestroy(Blockchain *blockchain) {
     free(blockchain->blocks);
 }

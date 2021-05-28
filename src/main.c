@@ -21,7 +21,7 @@ void test() {
             .timestamp = time(NULL),
             .data = (void *) &data1,
             .size = sizeof(char) * (strlen(data1) + 1),
-            .previousHash = NULL,
+            .previousHash = "",
             .hash = "",
             .nonce = 0
     };
@@ -31,7 +31,7 @@ void test() {
     char data2[] = "bonsoir";
     block.data = (void *) &data2;
     block.size = sizeof(char) * (strlen(data2) + 1),
-    block.timestamp = time(NULL);
+            block.timestamp = time(NULL);
     blockchainAddBlock(&blockchain, &block);
 
     blockchainDisplay(&blockchain);

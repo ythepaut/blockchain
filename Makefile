@@ -10,13 +10,16 @@ CFLAGS = -Wall -Wextra -pedantic -std=gnu99 -O3 -Wno-unused-parameter -Werror -l
 CC = gcc $(CFLAGS)
 #CC = clang $(CFLAGS)
 
-all: main
+all: blockchain cryptocurrency
 
-main: src/main.o src/blockchain.o
+cryptocurrency: src/blockchain.o examples/cryptocurrency/cryptocurrency.o
+	$(CC) -o $@ $^
+
+blockchain: src/main.o src/blockchain.o
 	$(CC) -o $@ $^
 
 %.o: src/%.c src/%.h
 	$(CC) -c $< -o $@
 
 clean:
-	rm -f src/main src/*.o src/a.out
+	rm -f src/main src/*.o src/a.out examples/cryptocurrency/*.o

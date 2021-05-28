@@ -60,7 +60,7 @@ void processHash(Block *block, int difficulty);
  * @param size          size_t          (in)        Size of the data
  * @param dest          char*           (out)       Data as string
  */
-void toString(void *data, size_t size, char* dest);
+void toString(void *data, size_t size, char *dest);
 
 /**
  * Generates a string based on the block's data.
