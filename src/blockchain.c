@@ -58,7 +58,7 @@ void blockToString(Block *block, char* str)
 
     strcpy(str, timestamp);
     strcat(str, separator);
-    strcat(str, block->previousHash != NULL ? block->previousHash : "NULL");
+    strcat(str, block->previousHash);
     strcat(str, separator);
     strcat(str, block->data != NULL && block->size > 0 ? data : "NULL");
     strcat(str, separator);
@@ -86,7 +86,7 @@ void blockchainInit(Blockchain *blockchain, int difficulty)
             .timestamp = time(NULL),
             .data = NULL,
             .size = 0,
-            .previousHash = NULL,
+            .previousHash = "",
             .hash = "",
             .nonce = 0
     };
@@ -98,7 +98,7 @@ void blockchainInit(Blockchain *blockchain, int difficulty)
 
 void blockchainAddBlock(Blockchain *blockchain, Block *block)
 {
-    block->previousHash = blockchain->blocks[blockchain->n - 1].hash;
+    strcpy(block->previousHash, blockchain->blocks[blockchain->n - 1].hash);
     char hash[HASH_DIGEST_SIZE + 1] = "";
     blockHash(block, hash);
     processHash(block, blockchain->difficulty);

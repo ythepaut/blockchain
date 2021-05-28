@@ -26,7 +26,7 @@ typedef struct {
     time_t timestamp;
     void *data;
     size_t size;
-    char *previousHash;
+    char previousHash[HASH_DIGEST_SIZE + 1];
     char hash[HASH_DIGEST_SIZE + 1];
     int nonce;
 } Block;
