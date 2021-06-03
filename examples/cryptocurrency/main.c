@@ -14,7 +14,7 @@ void printHelp() {
     printf("\tlistPendingTransactions\t-\tList all pending transactions\n");
     printf("\tlistBlocks\t\t\t\t-\tList Ecoin blocks\n");
     printf("\tmine\t\t\t\t\t-\tMine a block\n");
-    printf("\thelp\t\t\t\t\t-\tPrints this message\n");
+    printf("\thelp\t\t\t\t\t-\tPrint this message\n");
     printf("\texit\t\t\t\t\t-\tExit the program\n");
 }
 
@@ -26,7 +26,7 @@ void makeTransaction(Ecoin *ecoin) {
 
     printf("To which address do you wish to transfer these Ecoins ?\n> ");
     scanf("%100s", input);
-    char to[100];
+    char* to = calloc(100, sizeof(char));
     strcpy(to, input);
 
     Transaction *transaction = ecoinCreateTransaction(amount, "qAM3akYA6oEErNiMgao4cm3GCFt5naCL", to);

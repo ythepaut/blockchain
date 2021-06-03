@@ -33,11 +33,6 @@ void processHash(Block *block, int difficulty) {
     } while (!blockValidate(block, difficulty));
 }
 
-void toString(void *data, size_t size, char *dest) {
-    assert(data != NULL && size > 0);
-    memcpy(dest, data, size);
-}
-
 void blockToString(Block *block, char *str) {
     const char *separator = ":";
 
@@ -47,16 +42,11 @@ void blockToString(Block *block, char *str) {
     char nonce[INT32_MAX % 10];
     sprintf(nonce, "%d", block->nonce);
 
-    char data[block->size];
-    if (block->data != NULL && block->size > 0) {
-        toString(block->data, block->size, data);
-    }
-
     strcpy(str, timestamp);
     strcat(str, separator);
     strcat(str, block->previousHash);
     strcat(str, separator);
-    strcat(str, block->data != NULL && block->size > 0 ? data : "NULL");
+    strcat(str, (block->data != NULL) ? (char *) block->data : "NULL");
     strcat(str, separator);
     strcat(str, nonce);
 }
@@ -134,5 +124,7 @@ int blockchainValidate(Blockchain *blockchain) {
 }
 
 void blockchainDestroy(Blockchain *blockchain) {
+    for (int i = 0; i < blockchain->n; ++i)
+        free(blockchain->blocks[i].data);
     free(blockchain->blocks);
 }

@@ -71,10 +71,9 @@ void ecoinDestroy(Ecoin *ecoin) {
 
         Element *current = ((LinkedList *) block)->head;
         while (current != NULL) {
-            free((Transaction *) current->value);
+            free((Transaction *) current->value); // FIXME : SEGFAULT
             current = current->next;
         }
-        linkedListDestroy((LinkedList *) block);
     }
     // Destroy pending transaction list
     linkedListDestroy(&ecoin->pendingTransactions);
