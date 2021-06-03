@@ -70,7 +70,7 @@ void blockchainInit(Blockchain *blockchain, int difficulty) {
             .timestamp = time(NULL),
             .data = NULL,
             .size = 0,
-            .previousHash = "",
+            .previousHash = "0000000000000000000000000000000000000000000000000000000000000000",
             .hash = "",
             .nonce = 0
     };
@@ -90,11 +90,10 @@ void blockchainAddBlock(Blockchain *blockchain, Block *block) {
 }
 
 void blockchainDisplay(Blockchain *blockchain) {
+    printf("No.\tHash\t\t\t\t\t\t\t\t\tPrev. hash\t\t\t\t\t\t\t\tNonce\t\tData\n");
     for (int i = 0; i < blockchain->n; ++i) {
         Block *block = &blockchain->blocks[i];
-        char str[MAX_BLOCK_DESCRIPTION_SIZE + block->size];
-        blockToString(block, str);
-        printf("%04d\t%s\t%s\n", i, block->hash, str);
+        printf("%04d\t%s\t%s\t%d\t\t%s\n", i, block->hash, block->previousHash, block->nonce, (block->data != NULL) ? (char *) block->data : "NULL");
     }
 }
 

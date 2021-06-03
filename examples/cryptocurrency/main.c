@@ -70,7 +70,7 @@ int main() {
         processCommand(cmd, &ecoin);
 
     } while (strcmp(cmd, "exit") != 0);
-    printf("Goodbye !");
+    printf("Goodbye !\n");
 
     ecoinDestroy(&ecoin);
 

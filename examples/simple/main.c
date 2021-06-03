@@ -13,7 +13,7 @@ void printHelp() {
     printf("\tdisplay\t\t\t\t\t-\tDisplay the blockchain\n");
     printf("\tcreate\t\t\t\t\t-\tCreate a new block\n");
     printf("\tedit\t\t\t\t\t-\tModify a block's data\n");
-    printf("\tvalidate\t\t\t\t\t-\tCheck if the blockchain is valid\n");
+    printf("\tvalidate\t\t\t\t-\tCheck if the blockchain is valid\n");
     printf("\thelp\t\t\t\t\t-\tPrint this message\n");
     printf("\texit\t\t\t\t\t-\tExit the program\n");
 }
@@ -90,7 +90,7 @@ int main(int argc, char *argv[]) {
         processCommand(cmd, &blockchain);
 
     } while (strcmp(cmd, "exit") != 0);
-    printf("Goodbye !");
+    printf("Goodbye !\n");
 
     blockchainDestroy(&blockchain);
 
