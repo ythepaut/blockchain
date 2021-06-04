@@ -15,6 +15,7 @@
 #include "openssl/sha.h"
 #include <assert.h>
 #include <time.h>
+#include <pthread.h>
 
 #define MAX_BLOCK_DESCRIPTION_SIZE sizeof(Block)
 #define HASH_DIGEST_SIZE 64
@@ -41,6 +42,18 @@ typedef struct {
 } Blockchain;
 
 /**
+ * Block mining parameters (used for the multi-threading)
+ */
+typedef struct {
+    Block block;
+    int difficulty;
+    int threadCount;
+    int offset;
+    pthread_t *threads;
+    Block *result;
+} MinerParams;
+
+/**
  * Generates the block's hash
  * @param block         block*          (in)        Block to get the hash from
  * @param hash          char*           (out)       Block hash
@@ -48,11 +61,18 @@ typedef struct {
 void blockHash(Block *block, char *hash);
 
 /**
- * "Mines" the block : Calculates the hash until it begins with n zeros, where n is the difficulty
+ * Thread : Calculates the hash until it begins with n zeros, where n is the difficulty
+ * @param params        MinerParams*    (in-out)    Parameters to mine the block
+ */
+void processHash(MinerParams *params);
+
+/**
+ * Proof of work algorithm : Process the hash on multiple threads
  * @param block         block*          (in-out)    Block to mine
  * @param difficulty    int             (in)        Mining difficulty
+ * @param threadCount   int             (in)        Number of threads to launch
  */
-void processHash(Block *block, int difficulty);
+void mineBlock(Block *block, int difficulty, int threadCount);
 
 /**
  * Generates a string based on the block's data.
@@ -73,15 +93,17 @@ int blockValidate(Block *block, int difficulty);
  * Initializes the blockchain
  * @param blockchain    Blockchain*     (in-out)    Blockchain to initialize
  * @param difficulty    int             (in)        Mining difficulty
+ * @param threadCount   int             (in)        Number of thread used to mine the genesis block
  */
-void blockchainInit(Blockchain *blockchain, int difficulty);
+void blockchainInit(Blockchain *blockchain, int difficulty, int threadCount);
 
 /**
  * Add a block to the blockchain
  * @param blockchain    Blockchain*     (in-out)    Blockchain to modify
- * @param block         Block*          (in)        Block to add
+ * @param block         Block*          (in-out)    Block to add
+ * @param threadCount   int             (in)        Number of thread used to mine the block
  */
-void blockchainAddBlock(Blockchain *blockchain, Block *block);
+void blockchainAddBlock(Blockchain *blockchain, Block *block, int threadCount);
 
 /**
  * Prints all blocks

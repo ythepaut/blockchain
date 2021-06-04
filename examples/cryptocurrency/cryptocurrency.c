@@ -9,7 +9,7 @@
 #include "cryptocurrency.h"
 
 void ecoinInit(Ecoin *ecoin) {
-    blockchainInit(&ecoin->blockchain, ECOIN_MINING_DIFFICULTY);
+    blockchainInit(&ecoin->blockchain, ECOIN_MINING_DIFFICULTY, 1); //TODO manage thread count
     linkedListInit(&ecoin->pendingTransactions);
     ecoin->miningReward = ECOIN_MINING_REWARD;
 }
@@ -36,7 +36,7 @@ void minePendingTransactions(Ecoin *ecoin, char *minerAddress) {
             .hash = "",
             .nonce = 0
     };
-    blockchainAddBlock(&ecoin->blockchain, &block);
+    blockchainAddBlock(&ecoin->blockchain, &block, 1); //TODO manage thread count
 
     // Reset the transaction list
     LinkedList linkedList;

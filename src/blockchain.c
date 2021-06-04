@@ -23,14 +23,50 @@ void blockHash(Block *block, char *hash) {
     }
 }
 
-void processHash(Block *block, int difficulty) {
-    block->nonce = 0;
+void processHash(MinerParams *params) {
+    Block *block = &params->block;
+    const int difficulty = params->difficulty;
+    const int threadCount = params->threadCount;
+    const int offset = params->offset;
+
+    // Loop while hash doesn't start with enough zeros
+    block->nonce = offset - threadCount;
     do {
-        ++block->nonce;
+        block->nonce += threadCount;
         char hash[HASH_DIGEST_SIZE + 1] = "";
         blockHash(block, hash);
         strcpy(block->hash, hash);
-    } while (!blockValidate(block, difficulty));
+    } while (!blockValidate(block, difficulty) && params->result->nonce == -1);
+
+    // Setting return parameter
+    *params->result = *block;
+}
+
+void mineBlock(Block *block, int difficulty, int threadCount) {
+    pthread_t threads[threadCount];
+    block->nonce = -1;
+
+    // Setting up thread parameters
+    MinerParams params[threadCount];
+    for (int i = 0; i < threadCount; ++i) {
+        MinerParams param = {
+                .block = *block,
+                .difficulty = difficulty,
+                .threadCount = threadCount,
+                .offset = i,
+                .threads = threads,
+                .result = block
+        };
+        params[i] = param;
+    }
+
+    // Creating the threads
+    for (int i = 0; i < threadCount; ++i)
+        pthread_create(&threads[i], NULL, (void *) processHash, (void *) &params[i]);
+
+    // Wait for the threads to finish
+    for (int i = 0; i < threadCount; ++i)
+        pthread_join(threads[i], NULL);
 }
 
 void blockToString(Block *block, char *str) {
@@ -59,7 +95,7 @@ int blockValidate(Block *block, int difficulty) {
     return 1;
 }
 
-void blockchainInit(Blockchain *blockchain, int difficulty) {
+void blockchainInit(Blockchain *blockchain, int difficulty, int threadCount) {
     // Initialize blockchain
     blockchain->n = 1;
     blockchain->blocks = (Block *) malloc(sizeof(Block) * 2);
@@ -74,17 +110,17 @@ void blockchainInit(Blockchain *blockchain, int difficulty) {
             .hash = "",
             .nonce = 0
     };
-    processHash(&genesis, blockchain->difficulty);
+    mineBlock(&genesis, blockchain->difficulty, threadCount);
 
     // Add the genesis block to the blockchain
     blockchain->blocks[0] = genesis;
 }
 
-void blockchainAddBlock(Blockchain *blockchain, Block *block) {
+void blockchainAddBlock(Blockchain *blockchain, Block *block, int threadCount) {
     strcpy(block->previousHash, blockchain->blocks[blockchain->n - 1].hash);
     char hash[HASH_DIGEST_SIZE + 1] = "";
     blockHash(block, hash);
-    processHash(block, blockchain->difficulty);
+    mineBlock(block, blockchain->difficulty, threadCount);
     blockchain->blocks = (Block *) realloc(blockchain->blocks, ++blockchain->n * sizeof(Block));
     blockchain->blocks[blockchain->n - 1] = *block;
 }
@@ -93,7 +129,8 @@ void blockchainDisplay(Blockchain *blockchain) {
     printf("No.\tHash\t\t\t\t\t\t\t\t\tPrev. hash\t\t\t\t\t\t\t\tNonce\t\tData\n");
     for (int i = 0; i < blockchain->n; ++i) {
         Block *block = &blockchain->blocks[i];
-        printf("%04d\t%s\t%s\t%d\t\t%s\n", i, block->hash, block->previousHash, block->nonce, (block->data != NULL) ? (char *) block->data : "NULL");
+        printf("%04d\t%s\t%s\t%d\t\t%s\n", i, block->hash, block->previousHash, block->nonce,
+               (block->data != NULL) ? (char *) block->data : "NULL");
     }
 }
 

@@ -18,7 +18,7 @@ void printHelp() {
     printf("\texit\t\t\t\t\t-\tExit the program\n");
 }
 
-void createBlock(Blockchain *blockchain) {
+void createBlock(Blockchain *blockchain, int threadCount) {
     char *input = calloc(1024, sizeof(char));
     printf("What string would you like to store ?\n> ");
     scanf("%1023s", input);
@@ -32,7 +32,7 @@ void createBlock(Blockchain *blockchain) {
             .nonce = 0
     };
     printf("Mining and adding block to the blockchain...\n");
-    blockchainAddBlock(blockchain, &block);
+    blockchainAddBlock(blockchain, &block, threadCount);
     printf("Done.\n");
 }
 
@@ -52,13 +52,13 @@ void editBlock(Blockchain *blockchain) {
     printf("Done.\n");
 }
 
-void processCommand(char *cmd, Blockchain *blockchain) {
+void processCommand(char *cmd, Blockchain *blockchain, int threadCount) {
     if (strcmp(cmd, "help") == 0) {
         printHelp();
     } else if (strcmp(cmd, "display") == 0) {
         blockchainDisplay(blockchain);
     } else if (strcmp(cmd, "create") == 0) {
-        createBlock(blockchain);
+        createBlock(blockchain, threadCount);
     } else if (strcmp(cmd, "edit") == 0) {
         editBlock(blockchain);
     } else if (strcmp(cmd, "validate") == 0) {
@@ -68,17 +68,26 @@ void processCommand(char *cmd, Blockchain *blockchain) {
     }
 }
 
-int main(int argc, char *argv[]) {
+void setup(int *difficulty, int *threadCount) {
+    char buffer[4];
+    printf("What difficulty would you like (e.g. 5) ?\n> ");
+    scanf("%3s", buffer);
+    *difficulty = (int) strtol(buffer, NULL, 10);
+    printf("How many threads do you want to use to mine blocks ?\n> ");
+    scanf("%3s", buffer);
+    *threadCount = (int) strtol(buffer, NULL, 10);
+}
 
-    int difficulty = 3;
-    if (argc == 2) {
-        difficulty = (int) strtol(argv[1], NULL, 10);
-    }
+int main() {
+
+    int difficulty;
+    int threadCount;
+    setup(&difficulty, &threadCount);
 
     printf("Initializing blockchain...\n");
 
     Blockchain blockchain;
-    blockchainInit(&blockchain, difficulty);
+    blockchainInit(&blockchain, difficulty, threadCount);
 
     // Command prompt
     printf("Welcome !\n");
@@ -87,7 +96,7 @@ int main(int argc, char *argv[]) {
 
         printf("\n> ");
         scanf("%100s", cmd);
-        processCommand(cmd, &blockchain);
+        processCommand(cmd, &blockchain, threadCount);
 
     } while (strcmp(cmd, "exit") != 0);
     printf("Goodbye !\n");
