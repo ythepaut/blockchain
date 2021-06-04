@@ -55,14 +55,6 @@ void blockHash(Block *block, char *hash);
 void processHash(Block *block, int difficulty);
 
 /**
- * Converts data to string
- * @param data          void*           (in)        Pointer to the data to stringify
- * @param size          size_t          (in)        Size of the data
- * @param dest          char*           (out)       Data as string
- */
-void toString(void *data, size_t size, char *dest);
-
-/**
  * Generates a string based on the block's data.
  * @param block         block*          (in)        Block to get the description from
  * @param str           char*           (out)       Block as string
