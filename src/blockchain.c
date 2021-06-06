@@ -36,10 +36,20 @@ void processHash(MinerParams *params) {
         char hash[HASH_DIGEST_SIZE + 1] = "";
         blockHash(block, hash);
         strcpy(block->hash, hash);
+
+        char str2[200];
+        blockToString(block, str2);
+        printf("[Thread %d]: %s   %s\n", offset, str2, block->hash);
     } while (!blockValidate(block, difficulty) && params->result->nonce == -1);
 
     // Setting return parameter
-    *params->result = *block;
+    if (blockValidate(block, difficulty)) {
+        *params->result = *block;
+
+        char tmp[200];
+        blockToString(block, tmp);
+        printf("\n[Thread %d]: FOUND ! nonce=%d, hash=%s, toStr=%s\n", offset, block->nonce, block->hash, tmp);
+    }
 }
 
 void mineBlock(Block *block, int difficulty, int threadCount) {
@@ -118,8 +128,6 @@ void blockchainInit(Blockchain *blockchain, int difficulty, int threadCount) {
 
 void blockchainAddBlock(Blockchain *blockchain, Block *block, int threadCount) {
     strcpy(block->previousHash, blockchain->blocks[blockchain->n - 1].hash);
-    char hash[HASH_DIGEST_SIZE + 1] = "";
-    blockHash(block, hash);
     mineBlock(block, blockchain->difficulty, threadCount);
     blockchain->blocks = (Block *) realloc(blockchain->blocks, ++blockchain->n * sizeof(Block));
     blockchain->blocks[blockchain->n - 1] = *block;
@@ -140,6 +148,7 @@ int blockchainValidate(Blockchain *blockchain) {
 
         // All block hashes must be valid
         if (!blockValidate(block, blockchain->difficulty)) {
+            printf("1\n");
             return 0;
         }
 
@@ -147,11 +156,13 @@ int blockchainValidate(Blockchain *blockchain) {
         char hash[HASH_DIGEST_SIZE + 1] = "";
         blockHash(block, hash);
         if (strcmp(block->hash, hash) != 0) {
+            printf("2 : %s != %s\n", block->hash, hash);
             return 0;
         }
 
         // All blocks, except the genesis block must point to the previous block
         if (i > 0 && strcmp(block->previousHash, blockchain->blocks[i - 1].hash) != 0) {
+            printf("3\n");
             return 0;
         }
 
